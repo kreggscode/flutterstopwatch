@@ -1,0 +1,115 @@
+import 'dart:async' show Timer;
+import "package:flutter/material.dart";
+
+void main() => runApp(StopwatchApp());
+
+class StopwatchApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Stopwatch App',
+      home: StopwatchHomePage(),
+    );
+  }
+}
+
+class StopwatchHomePage extends StatefulWidget {
+  @override
+  _StopwatchHomePageState createState() => _StopwatchHomePageState();
+}
+
+class _StopwatchHomePageState extends State<StopwatchHomePage> {
+  Stopwatch _stopwatch = Stopwatch();
+  Timer? _timer;
+  bool _isRunning = false;
+
+  List<String> _lapTimes = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Stopwatch'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _stopwatch.elapsed.toString(),
+              style: TextStyle(fontSize: 60),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: _isRunning ? _stop : _start,
+                  child: Text(_isRunning ? 'Stop' : 'Start'),
+                ),
+                SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: _reset,
+                  child: Text('Reset'),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _lapTimes.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    leading: Text('Lap ${index + 1}'),
+                    trailing: Text(_lapTimes[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _recordLapTime,
+        child: Icon(Icons.timer),
+      ),
+    );
+  }
+
+  void _start() {
+    setState(() {
+      _isRunning = true;
+      _stopwatch.start();
+      _timer = Timer.periodic(Duration(milliseconds: 10), (timer) {
+        setState(() {});
+      });
+    });
+  }
+
+  void _stop() {
+    setState(() {
+      _isRunning = false;
+      _stopwatch.stop();
+      _timer?.cancel();
+    });
+  }
+
+  void _reset() {
+    setState(() {
+      _stopwatch.reset();
+      _lapTimes.clear();
+    });
+  }
+
+  void _recordLapTime() {
+    setState(() {
+      _lapTimes.add(_stopwatch.elapsed.toString());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+}
